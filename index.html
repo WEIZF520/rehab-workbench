@@ -297,6 +297,7 @@
     <button class="topbtn" id="exportBtn" style="display:none">⬇ <span class="lbl">导出</span></button>
     <button class="topbtn" id="importBtn" style="display:none">⬆ <span class="lbl">导入</span></button>
     <button class="topbtn cloud" id="syncBtn" style="display:none">☁ <span class="lbl">同步到云端</span></button>
+    <button class="topbtn" id="changePassBtn" style="display:none">🔒 <span class="lbl">修改密码</span></button>
     <input type="file" id="importFile" accept="application/json" style="display:none" />
   </header>
 
@@ -2127,6 +2128,40 @@ function doLogin(){
     toast("密码错误，请重试");
   }
 }
+/* ---------- 修改密码（创作者模式下） ---------- */
+let passMode="login"; // login | change
+function openChangePass(){
+  passMode="change";
+  document.getElementById("loginTitle").textContent="修改创作者密码";
+  document.getElementById("loginDesc").textContent="输入新的创作者密码并保存。修改后请牢记，旧密码将失效。";
+  document.getElementById("loginHint").textContent="留空并点击取消可放弃修改";
+  loginOverlay.classList.add("show");
+  passInput.value=""; passInput.type="text"; setTimeout(()=>passInput.focus(),50);
+}
+document.getElementById("changePassBtn").addEventListener("click", ()=>{
+  if(!state.creator){ toast("请先登录创作者模式"); return; }
+  openChangePass();
+});
+// 重写登录/修改的确认按钮：按 passMode 分流
+document.getElementById("loginOk").removeEventListener("click", doLogin);
+document.getElementById("loginOk").addEventListener("click", ()=>{
+  if(passMode==="change"){
+    const nv=passInput.value.trim();
+    if(!nv){ closeLogin(); passMode="login"; resetLoginModal(); toast("已取消修改"); return; }
+    localStorage.setItem(LS_PASS, nv);
+    closeLogin(); passMode="login"; passInput.type="password"; resetLoginModal();
+    toast("创作者密码已修改，下次请用新密码登录");
+  } else { doLogin(); }
+});
+document.getElementById("loginCancel").addEventListener("click", ()=>{
+  if(passMode==="change"){ passMode="login"; passInput.type="password"; resetLoginModal(); }
+  closeLogin();
+});
+function resetLoginModal(){
+  document.getElementById("loginTitle").textContent="创作者登录";
+  document.getElementById("loginDesc").textContent="输入创作者密码以解锁编辑 / 录入权限。普通访客可直接浏览与刷题。";
+  document.getElementById("loginHint").textContent="默认密码：8888（首次登录后可修改）";
+}
 function syncCreatorUI(){
   document.getElementById("creatorPill").classList.toggle("on", state.creator);
   document.getElementById("creatorBtn").innerHTML = state.creator
@@ -2135,6 +2170,7 @@ function syncCreatorUI(){
   document.getElementById("exportBtn").style.display = state.creator?"inline-block":"none";
   document.getElementById("importBtn").style.display = state.creator?"inline-block":"none";
   document.getElementById("syncBtn").style.display = state.creator?"inline-block":"none";
+  document.getElementById("changePassBtn").style.display = state.creator?"inline-block":"none";
 }
 
 /* ---------- 导出 / 导入 ---------- */
