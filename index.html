@@ -403,6 +403,12 @@ function buildTree(){
   return roots;
 }
 const TREE = buildTree();
+/* 为每章追加「记忆量表」题库栏目（新增模块，不影响已有 N1..N43 题目映射） */
+for(const chap of TREE){
+  if(chap.type==="chapter" && chap.children.length){
+    chap.children.push({ id:nid(), title:"记忆量表题库", type:"module", mtype:"scale", parent:chap.id });
+  }
+}
 
 /* ---------- 状态 ---------- */
 const LS_CONTENT = "rfx_content_v1";
@@ -1775,7 +1781,7 @@ function renderWelcome(){
     <div class="welcome">
       <div class="hero">
         <h1>👋 欢迎使用康复功能评定学备考工作台</h1>
-        <p>左侧为 22 章考点目录，每章展开后含【填空题 / 名词解释 / 简答题】三大题库。</p>
+        <p>左侧为 22 章考点目录，每章展开后含【填空题 / 名词解释 / 简答题 / 记忆量表】四大题库。</p>
         <p>点击章节名称展开目录，点击题型即可进入刷题复习。</p>
       </div>
       <div class="feats">
@@ -1792,7 +1798,7 @@ function renderModule(node){
   const view = state.showUnmasteredOnly ? list.filter(q=>!(state.progress[q.id]&&state.progress[q.id].mastered)) : list;
   const total = list.length;
   const mastered = list.filter(q=>state.progress[q.id]&&state.progress[q.id].mastered).length;
-  const badgeTxt = {fill:"填空题",term:"名词解释",short:"简答题"}[node.mtype]||"";
+  const badgeTxt = {fill:"填空题",term:"名词解释",short:"简答题",scale:"记忆量表"}[node.mtype]||"";
   const path = pathOf(node.id);
   const pathStr = path.slice(0,-1).join(" › ");
 
